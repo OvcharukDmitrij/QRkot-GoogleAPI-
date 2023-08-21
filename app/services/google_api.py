@@ -33,7 +33,7 @@ async def set_user_permissions(
     permissions_body = {'type': 'user',
                         'role': 'writer',
                         'emailAddress': settings.email,
-                        'sendNotificationEmails': False}
+                        }
     service = await wrapper_services.discover('drive', 'v3')
     await wrapper_services.as_service_account(
         service.permissions.create(
@@ -54,8 +54,15 @@ async def spreadsheets_update_value(
         ['Отчет от', now_date_time],
         ['Топ проектов по скорости закрытия'],
         ['Название проекта', 'Время сбора', 'Описание'],
-        *[list(map(str, project)) for project in close_projects]
+
     ]
+    for project in close_projects:
+        new_row = [
+            str(project['name']),
+            str(project['period']),
+            str(project['description']),
+        ]
+        table_values.append(new_row)
 
     update_body = {
         'majorDimension': 'ROWS',

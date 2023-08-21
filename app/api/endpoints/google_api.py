@@ -12,9 +12,8 @@ from app.services.google_api import (spreadsheets_create, set_user_permissions,
 router = APIRouter()
 
 
-@router.post(
+@router.get(
     '/',
-    response_model=list[dict[str, str, str]],
     dependencies=[Depends(current_superuser)],
 )
 async def get_report(

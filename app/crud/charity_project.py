@@ -29,21 +29,20 @@ class CRUDCharityProject(CRUDBase):
             self,
             session: AsyncSession,
     ) -> List[Dict[str, str]]:
-        close_projects = await session.execute(
+        projects = await session.execute(
             select(CharityProject).where(CharityProject.fully_invested)
         )
-        close_projects = close_projects.scalars().all()
 
-        close_projects_with_period = []
-
-        for project in close_projects:
-            close_projects_with_period.append({
+        close_projects = [
+            {
                 'name': project.name,
                 'period': project.close_date - project.create_date,
                 'description': project.description,
-            })
+            } for project in projects.scalars().all()
+        ]
 
-        return close_projects_with_period
+        close_projects = sorted(close_projects, key=lambda x: x['period'])
+        return close_projects
 
 
 charityproject_crud = CRUDCharityProject(CharityProject)
