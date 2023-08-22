@@ -1,10 +1,6 @@
-from datetime import datetime
-
 from app.core.config import settings
 
 FORMAT = "%Y/%m/%d %H:%M:%S"
-
-now = datetime.now().strftime(FORMAT)
 
 SHEETS = ('sheets', 'v4')
 DRIVE = ('drive', 'v3')
@@ -14,7 +10,7 @@ COLUM = 11
 
 # Шаблон таблицы отчета.
 SPREADSHEET_BODY = {
-    'properties': {'title': f'Отчет на {now}',
+    'properties': {'title': 'Отчет на ',
                    'locale': 'ru_RU'},
     'sheets': [{'properties': {'sheetType': 'GRID',
                                'sheetId': 0,
@@ -31,7 +27,7 @@ PERMISSIONS_BODY = {'type': 'user',
 
 # Шаблон для тела таблицы.
 TABLE_VALUES = [
-    ['Отчет от', now],
+    ['Отчет от'],
     ['Топ проектов по скорости закрытия'],
     ['Название проекта', 'Время сбора', 'Описание'],
 ]

@@ -1,12 +1,17 @@
+import copy
+from datetime import datetime
+
 from aiogoogle import Aiogoogle
 
 from app.constants import (SPREADSHEET_BODY, PERMISSIONS_BODY, TABLE_VALUES,
-                           SHEETS, DRIVE)
+                           SHEETS, DRIVE, FORMAT)
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     service = await wrapper_services.discover(*SHEETS)
-    spreadsheet_body = SPREADSHEET_BODY
+    now = datetime.now().strftime(FORMAT)
+    spreadsheet_body = copy.deepcopy(SPREADSHEET_BODY)
+    spreadsheet_body['properties']['title'] += now
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
@@ -34,7 +39,9 @@ async def spreadsheets_update_value(
         wrapper_services: Aiogoogle
 ) -> None:
     service = await wrapper_services.discover(*SHEETS)
-    table_values = TABLE_VALUES
+    now = datetime.now().strftime(FORMAT)
+    table_values = copy.deepcopy(TABLE_VALUES)
+    table_values[0].append(now)
     for project in close_projects:
         new_row = [
             str(project['name']),
