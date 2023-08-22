@@ -1,24 +1,12 @@
-from datetime import datetime
-
 from aiogoogle import Aiogoogle
 
-from app.core.config import settings
-
-FORMAT = "%Y/%m/%d %H:%M:%S"
+from app.constants import (SPREADSHEET_BODY, PERMISSIONS_BODY, TABLE_VALUES,
+                           SHEETS, DRIVE)
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
-    now_date_time = datetime.now().strftime(FORMAT)
-    service = await wrapper_services.discover('sheets', 'v4')
-    spreadsheet_body = {
-        'properties': {'title': f'Отчет на {now_date_time}',
-                       'locale': 'ru_RU'},
-        'sheets': [{'properties': {'sheetType': 'GRID',
-                                   'sheetId': 0,
-                                   'title': 'Лист1',
-                                   'gridProperties': {'rowCount': 100,
-                                                      'columnCount': 11}}}]
-    }
+    service = await wrapper_services.discover(*SHEETS)
+    spreadsheet_body = SPREADSHEET_BODY
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
@@ -30,11 +18,8 @@ async def set_user_permissions(
         spreadsheetid: str,
         wrapper_services: Aiogoogle
 ) -> None:
-    permissions_body = {'type': 'user',
-                        'role': 'writer',
-                        'emailAddress': settings.email,
-                        }
-    service = await wrapper_services.discover('drive', 'v3')
+    permissions_body = PERMISSIONS_BODY
+    service = await wrapper_services.discover(*DRIVE)
     await wrapper_services.as_service_account(
         service.permissions.create(
             fileId=spreadsheetid,
@@ -48,14 +33,8 @@ async def spreadsheets_update_value(
         close_projects: list,
         wrapper_services: Aiogoogle
 ) -> None:
-    now_date_time = datetime.now().strftime(FORMAT)
-    service = await wrapper_services.discover('sheets', 'v4')
-    table_values = [
-        ['Отчет от', now_date_time],
-        ['Топ проектов по скорости закрытия'],
-        ['Название проекта', 'Время сбора', 'Описание'],
-
-    ]
+    service = await wrapper_services.discover(*SHEETS)
+    table_values = TABLE_VALUES
     for project in close_projects:
         new_row = [
             str(project['name']),
@@ -71,7 +50,9 @@ async def spreadsheets_update_value(
     await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
             spreadsheetId=spreadsheetid,
-            range='A1:E30',
+            range=(
+                f'R1C1:R{len(table_values)}C{len(max(table_values, key=len))}'
+            ),
             valueInputOption='USER_ENTERED',
             json=update_body
         )
